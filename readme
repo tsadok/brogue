@@ -1,0 +1,77 @@
+Be sure to read readme.rtf too.  This readme only explains functionality that
+is specific to the Linux release of Brogue.
+
+---
+
+Brogue now supports remapped keys.  The remapping engine is quite limited
+and is described in bin/keymap.
+
+Press F12 or alt-enter to toggle fullscreen mode.
+
+Press -/+ or pgdn/pgup to adjust the font size
+
+--
+
+./brogue is a shell script that will invoke bin/brogue with the appropriate
+switches and in the correct working folder.  It therefore serves as an
+acceptable target for a desktop shortcut (see make-link-for-desktop.sh for
+an easy way to make one.)  It will pass command line arguments along
+to bin/brogue.  The following switches are accepted:
+
+-h                         print a help message
+-V                         print the version
+--scores                   dump scores to output and exit immediately
+
+-n                         start a new game, skipping the menu
+-s seed                    start a new game with the specified numerical seed
+-o filename[.broguesave]   open a recording (extension may be omitted)
+-v recording[.broguerec]   view a recording (extension may be omitted)
+-M                         same as --no-menu
+
+--size N                   starts the game with font size N (1 to 13)
+--no-menu                  never display the menu (automatically pick new game)
+--noteye-hack              ignore SDL-specific application state checks
+
+--
+
+The following render switches are accepted:
+
+-t	force ncurses-based terminal mode
+--SDL	force libtcod mode with an SDL renderer (default)
+-gl	force libtcod mode with an OpenGL renderer
+
+--
+
+Terminal mode uses as many colors as it has available to it.  If you are using
+gnome terminal, you already have 256 color support, but the terminal doesn't
+advertise that fact.  Change the TERM environment variable to tell Brogue that
+you have more than 16 colors:
+
+export TERM=xterm-256color
+
+Converely, if you are using a terminal that has 256 colors but only want to
+use 16:
+
+export TERM=xterm
+
+
+If you are using xterm, read http://push.cx/2008/256-color-xterms-in-ubuntu
+
+--
+
+The Makefile accepts these targets:
+	make tcod
+	make curses
+	make both
+
+If you build for curses only, libtcod is not required and SDL will not be linked
+or initialized at runtime.  If you build for tcod only, you do not need
+ncurses-dev.  If you make either 'tcod' or 'both', the Makefile will
+automatically download the 32-bit version of libtcod for you and untar it in
+the right place (in src).
+
+To produce a distributable tar file, make tar.  To clean (as you must after
+changing headers or before switching targets -- sorry about that), make clean.
+
+make both is the default.
+
