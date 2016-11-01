@@ -124,7 +124,23 @@ void benchmark() {
 
 void welcome() {
     char buf[DCOLS*3], buf2[DCOLS*3];
-	message("Hello and welcome, adventurer, to the Dungeons of Doom!", false);
+    char *rolename;
+    char hellomsg[255];
+    switch (rogue.seed % NUMBER_OF_ROLES) {
+    case ROLE_BARBARIAN:
+        rolename = "barbarian";
+        break;
+
+    case ROLE_MAGE:
+        rolename = "mage";
+        break;
+
+    case ROLE_ADVENTURER:
+    default:
+        rolename = "adventurer";
+    }
+    sprintf(hellomsg, "Hello and welcome, %s, to the Dungeons of Doom!", rolename);
+    message(hellomsg, false);
     strcpy(buf, "Retrieve the ");
     encodeMessageColor(buf, strlen(buf), &itemMessageColor);
     strcat(buf, "Amulet of Yendor");
@@ -399,6 +415,7 @@ void initializeRogue(unsigned long seed) {
 	rogue.updatedAllySafetyMapThisTurn = false;
 	rogue.updatedMapToSafeTerrainThisTurn = false;
 	rogue.updatedMapToShoreThisTurn = false;
+        rogue.didGuarantee = false;
 	rogue.strength = 12;
 	rogue.weapon = NULL;
 	rogue.armor = NULL;
