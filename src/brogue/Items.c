@@ -72,9 +72,30 @@ item *generateItem(unsigned short theCategory, short theKind) {
 
 unsigned long pickItemCategory(unsigned long theCategory) {
 	short i, sum, randIndex;
-	short probabilities[13] =						{50,	42,		52,		3,		3,		10,		8,		2,		3,      2,        0,		0,		0};
-	unsigned short correspondingCategories[13] =	{GOLD,	SCROLL,	POTION,	STAFF,	WAND,	WEAPON,	ARMOR,	FOOD,	RING,   CHARM,    AMULET,	GEM,	KEY};
-	
+        short role = rogue.seed % NUMBER_OF_ROLES;
+        short adventurer_probabilities[13] =
+            {50,   42,     52,     3,     3,    10,     8,     2,    3,      2,        0,      0,   0};
+        short barbarian_probabilities[13] =
+            {50,   30,     42,     0,     3,    23,     18,    2,    3,      2,        0,      0,   0};
+        short mage_probabilities[13] =
+            {50,   42,     52,     10,    6,    0,      6,     2,    3,      4,        0,      0,   0};
+        short *probabilities;
+	unsigned short correspondingCategories[13] =
+            {GOLD, SCROLL, POTION, STAFF, WAND, WEAPON, ARMOR, FOOD, RING, CHARM, AMULET, GEM, KEY};
+        switch (role) {
+        case ROLE_BARBARIAN:
+            probabilities = barbarian_probabilities;
+            break;
+
+        case ROLE_MAGE:
+            probabilities = mage_probabilities;
+            break;
+
+        default:
+        case ROLE_ADVENTURER:
+            probabilities = adventurer_probabilities;
+        }
+
 	sum = 0;
 	
 	for (i=0; i<13; i++) {
@@ -337,6 +358,29 @@ item *makeItemInto(item *theItem, unsigned long itemCategory, short itemKind) {
 		theItem->flags |= ITEM_CAN_BE_IDENTIFIED;
 	}
 	theItem->kind = itemKind;
+        if (theItem) {
+            short GuarCat, GuarItem;
+            short role = rogue.seed % NUMBER_OF_ROLES;
+            switch (role) { // This guarantee calculation, because it calculates two values together, is currently duplicated.
+            case ROLE_BARBARIAN:
+                GuarCat  = RING;
+                GuarItem = RING_TRANSFERENCE;
+                break;
+
+            case ROLE_MAGE:
+                GuarCat  = RING;
+                GuarItem = RING_WISDOM;
+                break;
+
+            case ROLE_ADVENTURER:
+            default:
+                GuarCat  = POTION;
+                GuarItem = POTION_DETECT_MAGIC;
+            }
+            if (itemCategory == GuarCat && theItem->kind == GuarItem) {
+                rogue.didGuarantee = true;
+            }
+        }
 	
 	return theItem;
 }
@@ -590,7 +634,53 @@ void populateItems(short upstairsX, short upstairsY) {
         randomDepthOffset += rand_range(-1, 1);
     }
 	
-	for (i=0; i<numberOfItems; i++) {
+
+    if ((rand_range((rogue.depthLevel / 2), (rogue.depthLevel + 1)) >= 6) && (!rogue.didGuarantee)) {
+        // Do the role's guaranteed item.
+        short GuarCat, GuarItem;
+        short role = rogue.seed % NUMBER_OF_ROLES;
+        switch (role) { // This guarantee calculation, because it calculates two values together, is currently duplicated.
+        case ROLE_BARBARIAN:
+            GuarCat  = RING;
+            GuarItem = RING_TRANSFERENCE;
+            break;
+
+        case ROLE_MAGE:
+            GuarCat  = RING;
+            GuarItem = RING_WISDOM;
+            break;
+
+        case ROLE_ADVENTURER:
+        default:
+            GuarCat  = POTION;
+            GuarItem = POTION_DETECT_MAGIC;
+        }
+        theItem = generateItem(GuarCat, GuarItem);
+        theItem->originDepth = rogue.depthLevel;
+        do {
+            getItemSpawnLoc(itemSpawnHeatMap, &x, &y, &totalHeat);
+        } while (passableArcCount(x, y) > 1);
+        coolHeatMapAt(itemSpawnHeatMap, x, y, &totalHeat);
+        placeItem(theItem, x, y);
+        // It counts as an item:
+        numberOfItems--;
+        if (D_INSPECT_LEVELGEN) { // note: code duplication, this should probably be split out to a function.
+			short **map = allocGrid();
+			short i2, j2;
+			for (i2=0; i2<DCOLS; i2++) {
+				for (j2=0; j2<DROWS; j2++) {
+					map[i2][j2] = itemSpawnHeatMap[i2][j2] * -1;
+				}
+			}
+			dumpLevelToScreen();
+			displayGrid(map);
+			freeGrid(map);
+			plotCharWithColor(theItem->displayChar, mapToWindowX(x), mapToWindowY(y), &black, &purple);
+			temporaryMessage("Placed guaranteed item.", true);
+		}
+    }
+
+    for (i=0; i<numberOfItems; i++) {
 		theCategory = ALL_ITEMS & ~GOLD; // gold is placed separately, below, so it's not a punishment
 		theKind = -1;
 		

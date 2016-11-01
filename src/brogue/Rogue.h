@@ -750,6 +750,7 @@ enum weaponKind {
 	JAVELIN,
 	NUMBER_WEAPON_KINDS
 };
+#define LAST_MELEE_WEAPON WAR_AXE
 
 enum weaponEnchants {
 	W_SPEED,
@@ -904,6 +905,13 @@ enum scrollKind {
 };
 
 #define MAX_PACK_ITEMS				26
+
+enum playerRole {
+    ROLE_ADVENTURER,
+    ROLE_BARBARIAN,
+    ROLE_MAGE,
+    NUMBER_OF_ROLES
+};
 
 enum monsterTypes {
 	MK_YOU,
@@ -2226,6 +2234,7 @@ typedef struct playerCharacter {
 	boolean trueColorMode;				// whether lighting effects are disabled
     boolean displayAggroRangeMode;      // whether your stealth range is displayed
 	boolean quit;						// to skip the typical end-game theatrics when the player quits
+        boolean didGuarantee;                   // role-specific guaranteed item has been generated
 	unsigned long seed;					// the master seed for generating the entire dungeon
 	short RNG;							// which RNG are we currently using?
 	unsigned long gold;					// how much gold we have
