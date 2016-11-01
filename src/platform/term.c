@@ -117,7 +117,7 @@ static void term_show_scrollbar(int show) {
 		}
 	}
 }
-
+/*
 static void term_enable_bracketed_paste( ) {
 	if (is_xterm) {
 		printf ("\033[2004h");
@@ -126,6 +126,7 @@ static void term_enable_bracketed_paste( ) {
 	// \033[200~%s\033[201~
 	// so we can use that to receive seeds or filenames or whatever
 }
+*/
 
 static int curses_init( ) {
 	if (videomode.curses) return 0;
@@ -282,7 +283,7 @@ static float CIE76(Lab *L1, Lab *L2) {
 	float lbias = 1.0;
 	return sqrt(lbias * SQUARE(L2->L - L1->L) + SQUARE(L2->a - L1->a) + SQUARE(L2->b - L1->b));
 }
-
+/*
 static float CIExyY(CIE *L1, CIE *L2) {
 	// this does a good job of estimating the difference between two colors, ignoring brightness
 	return sqrt(SQUARE(L2->x - L1->x) + SQUARE(L2->y - L1->y));
@@ -293,7 +294,7 @@ static float adamsDistance(CIE *v1, CIE *v2) {
 	// return sqrt(SQUARE(v2->X - v1->X) + SQUARE(v2->Y - v1->Y) + SQUARE(v2->Z - v1->Z));
 	return sqrt(SQUARE(v2->X - v1->X) + SQUARE(v2->Y - v1->Y) + SQUARE(v2->Z - v1->Z));
 }
-
+*/
 static void init_coersion() {
 	fcolor sRGB_white = (fcolor) {1, 1, 1};
 	white = toCIE(sRGB_white);
@@ -372,6 +373,7 @@ static int best (fcolor *fg, fcolor *bg) {
 	}
 }
 
+/*
 static int coerce (fcolor *color, float dark, float saturation, float brightcut, float grey) {
 	float bright = color->r;
 	if (color->g > bright) bright = color->g;
@@ -394,7 +396,7 @@ static int coerce_color (fcolor *fg, fcolor *bg) {
 	if (f == b) f ^= 8;
 	return COLORING(f, b);
 }
-
+*/
 
 
 
