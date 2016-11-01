@@ -81,7 +81,7 @@ endif
 .PHONY : clean both curses tcod tar
 
 bin/brogue : ${DEPENDENCIES} ${BROGUEFILES}
-	$(CC) -O2 -march=i586 -o bin/brogue ${BROGUEFILES} ${LIBRARIES} -Wl,-rpath,.
+	$(CC) -O2 -o bin/brogue ${BROGUEFILES} ${LIBRARIES} -Wl,-rpath,.
 
 clean : 
 	rm -f src/brogue/*.o src/platform/*.o bin/brogue
