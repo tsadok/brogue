@@ -122,24 +122,22 @@ void benchmark() {
     printf("\n\nBenchmark took a total of %lu seconds.", ((unsigned long) time(NULL)) - initialTime);
 }
 
+const char * roleName(int idx) {
+    const char *const name[] = {
+        "adventurer",
+        "barbarian",
+        "mage"
+    };
+    if (idx >= NUMBER_OF_ROLES)
+        return "unknown adventurer";
+    return name[idx];
+}
+
 void welcome() {
     char buf[DCOLS*3], buf2[DCOLS*3];
-    char *rolename;
     char hellomsg[255];
-    switch (rogue.seed % NUMBER_OF_ROLES) {
-    case ROLE_BARBARIAN:
-        rolename = "barbarian";
-        break;
-
-    case ROLE_MAGE:
-        rolename = "mage";
-        break;
-
-    case ROLE_ADVENTURER:
-    default:
-        rolename = "adventurer";
-    }
-    sprintf(hellomsg, "Hello and welcome, %s, to the Dungeons of Doom!", rolename);
+    sprintf(hellomsg, "Hello and welcome, %s, to the Dungeons of Doom!",
+            roleName(rogue.seed % NUMBER_OF_ROLES));
     message(hellomsg, false);
     strcpy(buf, "Retrieve the ");
     encodeMessageColor(buf, strlen(buf), &itemMessageColor);

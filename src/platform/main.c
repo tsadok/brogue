@@ -1,4 +1,6 @@
 #include "platform.h"
+#include <time.h>
+extern const char * roleName(int);
 
 #ifdef BROGUE_TCOD
 #include "libtcod.h"
@@ -101,6 +103,32 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
+                if (strcmp(argv[i], "--role") == 0) {
+                    unsigned long seed = 0;
+                    unsigned int role = NUMBER_OF_ROLES;
+                    // if we want to play a specific role...
+                    if (i + 1 < argc) {
+                        const char * specified = argv[i + 1];
+                        int j;
+                        for (j = 0; j < NUMBER_OF_ROLES; j++) {
+                            if ((strcmp(specified, roleName(j)) == 0) ||
+                                (j > 0 && j == atoi(specified))) {
+                                role = j;
+                                i++;
+                            }
+                        }
+                    }
+                    // pick a seed for that role:
+                    if (role < NUMBER_OF_ROLES) {
+                        seed = (unsigned long) time(NULL) - 1352700000 - NUMBER_OF_ROLES;
+                        while ((seed % NUMBER_OF_ROLES) != role) {
+                            seed++;
+                        }
+                        rogue.nextGameSeed = seed;
+                        rogue.nextGame = NG_NEW_GAME_WITH_SEED;
+                        continue;
+                    }
+                }
 
 		if(strcmp(argv[i], "-n") == 0) {
 			if (rogue.nextGameSeed == 0) {
