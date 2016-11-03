@@ -122,6 +122,11 @@ void benchmark() {
     printf("\n\nBenchmark took a total of %lu seconds.", ((unsigned long) time(NULL)) - initialTime);
 }
 
+/* Constraints on role names:
+ * For now, to keep chooseRole() simple, role names should consist entirely of ASCII characters.
+ * For now, to keep chooseRole() simple, each role name should start  with a different lowercase letter.
+ * To keep the --role command-line option reasonable, role names should not contain spaces or other shell metacharacters.
+ */
 const char * roleName(int idx) {
     const char *const name[] = {
         "adventurer",
