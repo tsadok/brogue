@@ -26,6 +26,7 @@
 #include <math.h>
 #include <time.h>
 #include <limits.h>
+extern const char * roleName(int);
 
 #define MENU_FLAME_PRECISION_FACTOR		10
 #define MENU_FLAME_RISE_SPEED			50
@@ -655,6 +656,72 @@ the first %i depths will, of course, make the game significantly easier.",
     fclose(logFile);
 }
 
+/* Assumptions the chooseRole() function currently makes:
+ * All role names are alphanumeric ASCII.
+ * Each role name starts with a different lowercase letter.
+ * It's fine to present the roles in enum order.
+ */
+unsigned int chooseRole(void) {
+    short i, x, y, width, height, maxLen = 0;
+    brogueButton buttons[NUMBER_OF_ROLES + 1];
+    color *dialogColor = &interfaceBoxColor;
+    cellDisplayBuffer dbuf[COLS][ROWS], rbuf[COLS][ROWS];
+
+    copyDisplayBuffer(rbuf, displayBuffer);
+
+    for (i = 0; i <= NUMBER_OF_ROLES; i++) {
+        short len = strlen((i == NUMBER_OF_ROLES) ? "random" : roleName(i));
+        if (len > maxLen)
+            maxLen = len;
+    }
+    for (i = 0; i <= NUMBER_OF_ROLES; i++) {
+        const char *name = (i < NUMBER_OF_ROLES) ? roleName(i) : "random";
+        const char accel = (i < NUMBER_OF_ROLES) ? name[0] : '*';
+        initializeButton(&(buttons[i]));
+        buttons[i].opacity = INTERFACE_OPACITY;
+        buttons[i].flags |= (B_DRAW | B_ENABLED | B_KEYPRESS_HIGHLIGHT);
+        //buttons[i].flags &= (B_WIDE_CLICK_AREA | B_GRADIENT);
+        buttons[i].buttonColor = *dialogColor;
+        sprintf(buttons[i].text, "%c - %s", accel, name);
+        buttons[i].hotkey[0] = accel;
+        buttons[i].hotkey[1] = accel - ('a' - 'A');
+    }
+    x = (COLS - maxLen) / 2;
+    width = maxLen;
+    height = NUMBER_OF_ROLES + 2;
+    y = max(4, (ROWS - height) / 2);
+    for (i = 0; i <= NUMBER_OF_ROLES; i++) {
+        short len = strlen(buttons[i].text);
+        const char *tmp = buttons[i].text;
+        /*
+        for (j = len; j < width; j++)
+            buttons[i].text[j] = ' ';
+        buttons[i].text[width] = '\0';
+        */
+        sprintf(buttons[i].text, "%s%*s", tmp, (width - len), "");
+        buttons[i].x = x;
+        buttons[i].y = y + 1 + i;
+    }
+
+    clearDisplayBuffer(dbuf);
+    printString("What role?", x, y - 1, &itemMessageColor, dialogColor, dbuf);
+    rectangularShading(x - 1, y - 1, width + 1, height + 1, dialogColor, INTERFACE_OPACITY, dbuf);
+    overlayDisplayBuffer(dbuf, NULL);
+
+    for (i = 0; i <= NUMBER_OF_ROLES; i++) {
+        drawButton(&(buttons[i]), BUTTON_NORMAL, dbuf);
+        // I'm not sure why this needs to be done manually:
+        printString(buttons[i].text, x, y + i, &itemMessageColor, dialogColor, dbuf);
+    }
+
+    i = buttonInputLoop(buttons, NUMBER_OF_ROLES + 1, x, y, width, height, NULL);
+    overlayDisplayBuffer(rbuf, NULL);
+    if (i >= 0 && i <= NUMBER_OF_ROLES) {
+        return i;
+    }
+    return -1;
+}
+
 // This is the basic program loop.
 // When the program launches, or when a game ends, you end up here.
 // If the player has already said what he wants to do next
@@ -748,9 +815,21 @@ void mainBrogueJunction() {
 						}
 					}
 				} else {
+                                    // Do we want to choose by role?
+                                    unsigned int role = chooseRole();
+                                    unsigned int seed = 0;
+                                    if (role >= NUMBER_OF_ROLES || role < 0) {
 					rogue.nextGameSeed = 0; // Seed based on clock.
+                                    } else {
+                                        seed =  (unsigned long) time(NULL) - 1352700000 - NUMBER_OF_ROLES;
+                                        while ((seed % NUMBER_OF_ROLES) != role) {
+                                            seed++;
+                                        }
+                                        rogue.nextGameSeed = seed;
+                                        rogue.nextGame = NG_NEW_GAME_WITH_SEED;
+                                    }
 				}
-				
+
 				rogue.nextGame = NG_NOTHING;
 				initializeRogue(rogue.nextGameSeed);
 				startLevel(rogue.depthLevel, 1); // descending into level 1
