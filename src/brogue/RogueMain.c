@@ -131,7 +131,8 @@ const char * roleName(int idx) {
     const char *const name[] = {
         "adventurer",
         "barbarian",
-        "mage"
+        "mage",
+        "rogue"
     };
     if (idx >= NUMBER_OF_ROLES)
         return "unknown adventurer";
@@ -293,6 +294,7 @@ void initializeRogue(unsigned long seed) {
 			levels[i+1].upStairsLoc[1] = levels[i].downStairsLoc[1];
 		}
 	}
+
     
     // initialize the waypoints list
     for (i=0; i<MAX_WAYPOINT_COUNT; i++) {
@@ -322,7 +324,7 @@ void initializeRogue(unsigned long seed) {
 	}
 	
 	shuffleFlavors();
-    
+
     for (i = 0; i < FEAT_COUNT; i++) {
         rogue.featRecord[i] = featTable[i].initialValue;
     }
@@ -594,6 +596,7 @@ void initializeRogue(unsigned long seed) {
 //			theItem = addItemToPack(theItem);
 //		}
 	}
+        if ((rogue.seed % NUMBER_OF_ROLES) != ROLE_ADVENTURER)
 	blackOutScreen();
 	welcome();
 }
