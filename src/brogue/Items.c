@@ -91,8 +91,9 @@ unsigned long pickItemCategory(unsigned long theCategory) {
             probabilities = mage_probabilities;
             break;
 
-        default:
+        case ROLE_ROGUE:
         case ROLE_ADVENTURER:
+        default:
             probabilities = adventurer_probabilities;
         }
 
@@ -372,6 +373,11 @@ item *makeItemInto(item *theItem, unsigned long itemCategory, short itemKind) {
                 GuarItem = RING_WISDOM;
                 break;
 
+            case ROLE_ROGUE:
+                GuarCat  = RING;
+                GuarItem = RING_STEALTH;
+                break;
+
             case ROLE_ADVENTURER:
             default:
                 GuarCat  = POTION;
@@ -514,6 +520,45 @@ boolean getItemSpawnLoc(unsigned short heatMap[DCOLS][DROWS], short *x, short *y
 	return false;
 }
 
+/* Note that this function is called every time a dungeon level is
+   populated with items, so anything not intended to be cumulative
+   must be idempotent. */
+void adjustItemFrequenciesForRole(void) {
+    int i;
+    switch (rogue.seed % NUMBER_OF_ROLES) {
+    default:
+    case ROLE_ADVENTURER:
+        // This is the default vanilla role, so everything is already as it should be.
+        break;
+    case ROLE_BARBARIAN:
+        armorTable[PLATE_MAIL].frequency = 30;
+        scrollTable[SCROLL_IDENTIFY].frequency = 20;
+        scrollTable[SCROLL_SUMMON_MONSTER].frequency = 20;
+        ringTable[RING_WISDOM].frequency = 0;
+        ringTable[RING_REAPING].frequency = 0;
+        charmTable[CHARM_HASTE].frequency += charmTable[CHARM_RECHARGING].frequency;
+        charmTable[CHARM_RECHARGING].frequency = 0;
+        break;
+    case ROLE_MAGE:
+        armorTable[LEATHER_ARMOR].frequency += armorTable[PLATE_MAIL].frequency;
+        armorTable[PLATE_MAIL].frequency = 0;
+        ringTable[RING_TRANSFERENCE].frequency = 0;
+        ringTable[RING_WISDOM].frequency += ringTable[RING_REAPING].frequency;
+        ringTable[RING_REAPING].frequency = 0;
+        charmTable[CHARM_RECHARGING].frequency = 2 * charmTable[CHARM_NEGATION].frequency;
+        break;
+    case ROLE_ROGUE:
+        for (i = 0; i < NUMBER_ARMOR_KINDS; i++) {
+            if (i != LEATHER_ARMOR)
+                armorTable[i].frequency = (short) (armorTable[LEATHER_ARMOR].frequency / (i + 1));
+        }
+        scrollTable[SCROLL_TELEPORT].frequency = (short) (2 * scrollTable[SCROLL_IDENTIFY].frequency / 3);
+        potionTable[POTION_INVISIBILITY].frequency = 2 * potionTable[POTION_LEVITATION].frequency;
+        ringTable[RING_STEALTH].frequency = 2 * ringTable[RING_AWARENESS].frequency;
+        break;
+    }
+}
+
 #define aggregateGoldLowerBound(d)	(pow((double) (d), 3.05) + 320 * (d) + FLOAT_FUDGE)
 #define aggregateGoldUpperBound(d)	(pow((double) (d), 3.05) + 420 * (d) + FLOAT_FUDGE)
 
@@ -635,7 +680,9 @@ void populateItems(short upstairsX, short upstairsY) {
     }
 	
 
-    if ((rand_range((rogue.depthLevel / 2), (rogue.depthLevel + 1)) >= 6) && (!rogue.didGuarantee)) {
+    if ((rand_range((rogue.depthLevel / 2), (rogue.depthLevel + 1)) >=
+         (((rogue.seed % NUMBER_OF_ROLES) == ROLE_ROGUE) ? 4 : 6))
+        && (!rogue.didGuarantee)) {
         // Do the role's guaranteed item.
         short GuarCat, GuarItem;
         short role = rogue.seed % NUMBER_OF_ROLES;
@@ -649,6 +696,10 @@ void populateItems(short upstairsX, short upstairsY) {
             GuarCat  = RING;
             GuarItem = RING_WISDOM;
             break;
+
+        case ROLE_ROGUE:
+            GuarCat  = RING;
+            GuarItem = RING_STEALTH;
 
         case ROLE_ADVENTURER:
         default:
@@ -684,6 +735,7 @@ void populateItems(short upstairsX, short upstairsY) {
 		theCategory = ALL_ITEMS & ~GOLD; // gold is placed separately, below, so it's not a punishment
 		theKind = -1;
 		
+                adjustItemFrequenciesForRole();
 		scrollTable[SCROLL_ENCHANTING].frequency = rogue.enchantScrollFrequency;
 		potionTable[POTION_STRENGTH].frequency = rogue.strengthPotionFrequency;
         potionTable[POTION_LIFE].frequency = rogue.lifePotionFrequency;

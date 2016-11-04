@@ -2302,12 +2302,12 @@ const itemTable keyTable[NUMBER_KEY_TYPES] = {
 	{"crystal orb",			"", "", 1, 0,	0, {0,0,0}, true, false, "A faceted orb, seemingly cut from a single crystal, sparkling and perpetually warm to the touch. What manner of device might such an object activate?"},
 };
 
-const itemTable foodTable[NUMBER_FOOD_KINDS] = {
+itemTable foodTable[NUMBER_FOOD_KINDS] = {
 	{"ration of food",		"", "", 3, 25,	1800, {0,0,0}, true, false, "A ration of food. Was it left by former adventurers? Is it a curious byproduct of the subterranean ecosystem?"},
 	{"mango",				"", "", 1, 15,	1550, {0,0,0}, true, false, "An odd fruit to be found so deep beneath the surface of the earth, but only slightly less filling than a ration of food."}
 };
 
-const itemTable weaponTable[NUMBER_WEAPON_KINDS] = {
+itemTable weaponTable[NUMBER_WEAPON_KINDS] = {
 	{"dagger",				"", "", 10, 190,		12,	{3,	4,	1},		true, false, "A simple iron dagger with a well-worn wooden handle. Daggers will deal quintuple damage upon a succesful sneak attack instead of triple damage."},
 	{"sword",				"", "", 10, 440,		14, {7,	9,	1},		true, false, "The razor-sharp length of steel blade shines reassuringly."},
 	{"broadsword",			"", "", 10, 990,		19,	{14, 22, 1},	true, false, "This towering blade inflicts heavy damage by investing its heft into every cut."},
@@ -2330,7 +2330,7 @@ const itemTable weaponTable[NUMBER_WEAPON_KINDS] = {
 	{"javelin",				"", "",	10, 40,			15,	{3, 11, 3},		true, false, "This length of metal is weighted to keep the spike at its tip foremost as it sails through the air."},
 };
 
-const itemTable armorTable[NUMBER_ARMOR_KINDS] = {
+itemTable armorTable[NUMBER_ARMOR_KINDS] = {
 	{"leather armor",	"", "", 10,	250,		10,	{30,30,0},		true, false, "This lightweight armor offers basic protection."},
 	{"scale mail",		"", "", 10, 350,		12, {40,40,0},		true, false, "Bronze scales cover the surface of treated leather, offering greater protection than plain leather with minimal additional weight."},
 	{"chain mail",		"", "", 10, 500,		13, {50,50,0},		true, false, "Interlocking metal links make for a tough but flexible suit of armor."},
