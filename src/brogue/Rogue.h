@@ -907,9 +907,10 @@ enum scrollKind {
 #define MAX_PACK_ITEMS				26
 
 /* The following places in the code need to be updated if the list of player roles changes:
- * The playerRole enum in Rogue.h
+ * The playerRole enum right here in Rogue.h
  * The roleName() function in RogueMain.c
  * The category probability list(s) in pickItemCategory in Items.c
+ * The adjustItemFrequenciesForRole() function in Items.c (frequencies of individual kinds within each category)
  * The check that notes when the guarantee has been fulfilled, in makeItemInto in Items.c
  * The code that fulfills the guarantee, in populateItems in Items.c
  */
@@ -917,6 +918,7 @@ enum playerRole {
     ROLE_ADVENTURER,
     ROLE_BARBARIAN,
     ROLE_MAGE,
+    ROLE_ROGUE,
     NUMBER_OF_ROLES
 };
 
