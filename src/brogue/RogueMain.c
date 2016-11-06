@@ -131,6 +131,7 @@ const char * roleName(int idx) {
     const char *const name[] = {
         "adventurer",
         "barbarian",
+        "healer",
         "mage",
         "rogue"
     };
@@ -445,13 +446,23 @@ void initializeRogue(unsigned long seed) {
 	
 	theItem = generateItem(FOOD, RATION);
 	theItem = addItemToPack(theItem);
-	
-	theItem = generateItem(WEAPON, DAGGER);
-	theItem->enchant1 = theItem->enchant2 = 0;
+
+    if ((rogue.seed % NUMBER_OF_ROLES) == ROLE_HEALER) {
+        theItem = generateItem(WAND, WAND_DOMINATION);
+        theItem->enchant1 = theItem->enchant2 = 1;
+        theItem->flags &= ~(ITEM_CURSED | ITEM_RUNIC);
+        identify(theItem);
+        theItem = addItemToPack(theItem);
+        theItem = generateItem(STAFF, STAFF_HEALING);
+    } else {
+        theItem = generateItem(WEAPON, DAGGER);
+        theItem->enchant1 = theItem->enchant2 =  0;
+    }
 	theItem->flags &= ~(ITEM_CURSED | ITEM_RUNIC);
 	identify(theItem);
 	theItem = addItemToPack(theItem);
-	equipItem(theItem, false);
+    if (!((rogue.seed % NUMBER_OF_ROLES) == ROLE_HEALER))
+        equipItem(theItem, false);
 	
 	theItem = generateItem(WEAPON, DART);
 	theItem->enchant1 = theItem->enchant2 = 0;

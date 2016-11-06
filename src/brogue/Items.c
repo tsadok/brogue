@@ -79,12 +79,18 @@ unsigned long pickItemCategory(unsigned long theCategory) {
             {50,   30,     42,     0,     3,    23,     18,    2,    3,      2,        0,      0,   0};
         short mage_probabilities[13] =
             {50,   42,     52,     10,    6,    0,      6,     2,    3,      4,        0,      0,   0};
+        short healer_probabilities[13] =
+            {50,   42,     54,     10,    7,    1,      3,     2,    3,      3,        0,      0,   0};
         short *probabilities;
 	unsigned short correspondingCategories[13] =
             {GOLD, SCROLL, POTION, STAFF, WAND, WEAPON, ARMOR, FOOD, RING, CHARM, AMULET, GEM, KEY};
         switch (role) {
         case ROLE_BARBARIAN:
             probabilities = barbarian_probabilities;
+            break;
+
+        case ROLE_HEALER:
+            probabilities = healer_probabilities;
             break;
 
         case ROLE_MAGE:
@@ -368,6 +374,11 @@ item *makeItemInto(item *theItem, unsigned long itemCategory, short itemKind) {
                 GuarItem = RING_TRANSFERENCE;
                 break;
 
+            case ROLE_HEALER:
+                GuarCat  = WAND;
+                GuarItem = WAND_EMPOWERMENT;
+                break;
+
             case ROLE_MAGE:
                 GuarCat  = RING;
                 GuarItem = RING_WISDOM;
@@ -539,6 +550,19 @@ void adjustItemFrequenciesForRole(void) {
         charmTable[CHARM_HASTE].frequency += charmTable[CHARM_RECHARGING].frequency;
         charmTable[CHARM_RECHARGING].frequency = 0;
         break;
+    case ROLE_HEALER:
+        armorTable[LEATHER_ARMOR].frequency += armorTable[PLATE_MAIL].frequency;
+        armorTable[PLATE_MAIL].frequency = 0;
+        wandTable[WAND_BECKONING].frequency += wandTable[WAND_SLOW].frequency;
+        wandTable[WAND_SLOW].frequency = 0;
+        staffTable[STAFF_PROTECTION].frequency += staffTable[STAFF_FIRE].frequency;
+        staffTable[STAFF_FIRE].frequency = 0;
+        staffTable[STAFF_HASTE].frequency += staffTable[STAFF_LIGHTNING].frequency;
+        staffTable[STAFF_LIGHTNING].frequency = 0;
+        staffTable[STAFF_HEALING].frequency += staffTable[STAFF_CONJURATION].frequency;
+        staffTable[STAFF_CONJURATION].frequency = 0;
+        ringTable[RING_TRANSFERENCE].frequency = 0;
+        break;
     case ROLE_MAGE:
         armorTable[LEATHER_ARMOR].frequency += armorTable[PLATE_MAIL].frequency;
         armorTable[PLATE_MAIL].frequency = 0;
@@ -690,6 +714,11 @@ void populateItems(short upstairsX, short upstairsY) {
         case ROLE_BARBARIAN:
             GuarCat  = RING;
             GuarItem = RING_TRANSFERENCE;
+            break;
+
+        case ROLE_HEALER:
+            GuarCat  = WAND;
+            GuarItem = WAND_EMPOWERMENT;
             break;
 
         case ROLE_MAGE:
