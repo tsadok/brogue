@@ -919,6 +919,7 @@ enum scrollKind {
 enum playerRole {
     ROLE_ADVENTURER,
     ROLE_BARBARIAN,
+    ROLE_HEALER,
     ROLE_MAGE,
     ROLE_ROGUE,
     NUMBER_OF_ROLES
