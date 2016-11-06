@@ -81,6 +81,8 @@ unsigned long pickItemCategory(unsigned long theCategory) {
             {50,   42,     52,     10,    6,    0,      6,     2,    3,      4,        0,      0,   0};
         short healer_probabilities[13] =
             {50,   42,     54,     10,    7,    1,      3,     2,    3,      3,        0,      0,   0};
+        short spy_probabilities[13] =
+            {50,   42,     58,     3,     3,    4,      6,     2,    3,      4,        0,      0,   0};
         short *probabilities;
 	unsigned short correspondingCategories[13] =
             {GOLD, SCROLL, POTION, STAFF, WAND, WEAPON, ARMOR, FOOD, RING, CHARM, AMULET, GEM, KEY};
@@ -95,6 +97,10 @@ unsigned long pickItemCategory(unsigned long theCategory) {
 
         case ROLE_MAGE:
             probabilities = mage_probabilities;
+            break;
+
+        case ROLE_SPY:
+            probabilities = spy_probabilities;
             break;
 
         case ROLE_ROGUE:
@@ -390,6 +396,7 @@ item *makeItemInto(item *theItem, unsigned long itemCategory, short itemKind) {
                 break;
 
             case ROLE_ADVENTURER:
+            case ROLE_SPY:
             default:
                 GuarCat  = POTION;
                 GuarItem = POTION_DETECT_MAGIC;
@@ -580,6 +587,50 @@ void adjustItemFrequenciesForRole(void) {
         potionTable[POTION_INVISIBILITY].frequency = 2 * potionTable[POTION_LEVITATION].frequency;
         ringTable[RING_STEALTH].frequency = 2 * ringTable[RING_AWARENESS].frequency;
         break;
+    case ROLE_SPY:
+        /* This role is all about knowing what threats there are and evading them. */
+        for (i = 0; i < NUMBER_ARMOR_KINDS; i++) {
+            if (i != LEATHER_ARMOR)
+                armorTable[i].frequency = (short) (armorTable[LEATHER_ARMOR].frequency / (i + 1));
+        }
+        weaponTable[DAGGER].frequency     = 25;
+        weaponTable[SWORD].frequency      = 10;
+        weaponTable[BROADSWORD].frequency =  0;
+        weaponTable[WHIP].frequency       = 15;
+        weaponTable[RAPIER].frequency     = 20;
+        weaponTable[FLAIL].frequency      = 0;
+        weaponTable[MACE].frequency       = 5;
+        weaponTable[HAMMER].frequency     = 0;
+        weaponTable[SPEAR].frequency      = 5;
+        weaponTable[PIKE].frequency       = 5;
+        weaponTable[AXE].frequency        = 0;
+        weaponTable[WAR_AXE].frequency    = 0;
+        weaponTable[DART].frequency       = 5;
+        scrollTable[SCROLL_TELEPORT].frequency      = 9 + rogue.depthLevel;
+        scrollTable[SCROLL_MAGIC_MAPPING].frequency = 30;
+        potionTable[POTION_TELEPATHY].frequency     = 30;
+        potionTable[POTION_LEVITATION].frequency    = 20;
+        potionTable[POTION_HASTE_SELF].frequency    = 15;
+        potionTable[POTION_FIRE_IMMUNITY].frequency = 20;
+        potionTable[POTION_INVISIBILITY].frequency  = 20;
+        potionTable[POTION_DESCENT].frequency       = 20;
+        potionTable[POTION_LICHEN].frequency        = 15;
+        wandTable[WAND_TELEPORT].frequency          = 6;
+        staffTable[STAFF_TUNNELING].frequency += (staffTable[STAFF_LIGHTNING].frequency - 1);
+        staffTable[STAFF_LIGHTNING].frequency = 1;
+        staffTable[STAFF_BLINKING].frequency += staffTable[STAFF_POISON].frequency;
+        staffTable[STAFF_POISON].frequency = 0;
+        staffTable[STAFF_OBSTRUCTION].frequency += (staffTable[STAFF_FIRE].frequency - 8);
+        staffTable[STAFF_OBSTRUCTION].frequency += staffTable[STAFF_CONJURATION].frequency;
+        staffTable[STAFF_FIRE].frequency = 8;
+        staffTable[STAFF_CONJURATION].frequency = 0;
+        ringTable[RING_CLAIRVOYANCE].frequency  = 3;
+        ringTable[RING_STEALTH].frequency       = 2;
+        ringTable[RING_AWARENESS].frequency     = 3;
+        ringTable[RING_LIGHT].frequency         = 1 + (int) (rogue.depthLevel / 5);
+        ringTable[RING_REAPING].frequency       = 0;
+        ringTable[RING_TRANSFERENCE].frequency  = 0;
+        break;
     }
 }
 
@@ -731,6 +782,7 @@ void populateItems(short upstairsX, short upstairsY) {
             GuarItem = RING_STEALTH;
 
         case ROLE_ADVENTURER:
+        case ROLE_SPY:
         default:
             GuarCat  = POTION;
             GuarItem = POTION_DETECT_MAGIC;
