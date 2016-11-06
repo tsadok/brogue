@@ -133,7 +133,8 @@ const char * roleName(int idx) {
         "barbarian",
         "healer",
         "mage",
-        "rogue"
+        "rogue",
+        "scout"
     };
     if (idx >= NUMBER_OF_ROLES)
         return "unknown adventurer";
