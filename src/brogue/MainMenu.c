@@ -452,6 +452,25 @@ boolean dialogChooseFile(char *path, const char *suffix, const char *prompt) {
 		}
 	}
 	count = j;
+
+    // Now sort the list asciibetically.  This is a terribly
+    // inefficient sort, but I don't care right now, because it's 7pm
+    // and I am just tired of looking through the unsorted list trying
+    // to figure out which recording is the most recent.
+    j = 1;
+    while (j) {
+        j = 0;
+        for (i = 0; i + 1 < count; i++) {
+            //int leni = strlen(files[i].path);
+            //int lenj = strlen(files[j].path);
+            if (strcmp(files[i].path, files[i+1].path) > 0) {
+                fileEntry swap = files[i];
+                files[i]       = files[i+1];
+                files[i+1]     = swap;
+                j++;
+            }
+        }
+    }
 	
 	currentPageStart = 0;
 	
