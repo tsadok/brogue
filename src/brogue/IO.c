@@ -297,10 +297,11 @@ short actionMenu(short x, boolean playingBack) {
         }
         buttons[buttonCount].hotkey[0] = VIEW_RECORDING_KEY;
         buttonCount++;
+        /* // Remove this blank line to make room for enabling animations.
         sprintf(buttons[buttonCount].text, "    %s---", darkGrayColorEscape);
         buttons[buttonCount].flags &= ~B_ENABLED;
         buttonCount++;
-        
+        */
         if (KEYBOARD_LABELS) {
             sprintf(buttons[buttonCount].text, "  %s\\: %s%s color effects  ",	yellowColorEscape, whiteColorEscape, rogue.trueColorMode ? "Show" : "Hide");
         } else {
@@ -309,6 +310,16 @@ short actionMenu(short x, boolean playingBack) {
         buttons[buttonCount].hotkey[0] = TRUE_COLORS_KEY;
         takeActionOurselves[buttonCount] = true;
         buttonCount++;
+        if (KEYBOARD_LABELS) {
+            sprintf(buttons[buttonCount].text, "  %s|: %s Draw liquid %s",	yellowColorEscape, whiteColorEscape,
+                    rogue.animateLiquids ? "once / turn" : "in realtime");
+        } else {
+            sprintf(buttons[buttonCount].text, "  %s color effects  ",	rogue.trueColorMode ? "Show" : "Hide");
+        }
+        buttons[buttonCount].hotkey[0] = ANIMATE_LIQUIDS_KEY;
+        takeActionOurselves[buttonCount] = true;
+        buttonCount++;
+
         if (KEYBOARD_LABELS) {
             sprintf(buttons[buttonCount].text, "  %s]: %s%s stealth range  ",	yellowColorEscape, whiteColorEscape, rogue.displayAggroRangeMode ? "Hide" : "Display");
         } else {
@@ -2312,7 +2323,8 @@ void nextBrogueEvent(rogueEvent *returnEvent, boolean textInput, boolean colorsD
 			displayMonsterFlashes(true);
 		}
 		do {
-			nextKeyOrMouseEvent(returnEvent, textInput, colorsDance); // No mouse clicks outside of the window will register.
+			nextKeyOrMouseEvent(returnEvent, textInput, colorsDance && rogue.animateLiquids);
+            // No mouse clicks outside of the window will register.
 		} while (returnEvent->eventType == MOUSE_UP && !coordinatesAreInWindow(returnEvent->param1, returnEvent->param2));
 		// recording done elsewhere
 	}
@@ -2465,6 +2477,18 @@ void executeKeystroke(signed long keystroke, boolean controlKey, boolean shiftKe
                                  &teal, false);
 			}
 			break;
+		case ANIMATE_LIQUIDS_KEY:
+			rogue.animateLiquids = !rogue.animateLiquids;
+			displayLevel();
+			refreshSideBar(-1, -1, false);
+			if (!rogue.animateLiquids) {
+				messageWithColor(KEYBOARD_LABELS ? "Realtime liquid animation disabled. Press '|' again to enable." : "Realtime liquid animation disabled.",
+                                 &teal, false);
+			} else {
+				messageWithColor(KEYBOARD_LABELS ? "Realtime liquid animation enabled. Press '|' again to disable." : "Realtime liquid animation enabled.",
+                                 &teal, false);
+			}
+			break;            
 		case AGGRO_DISPLAY_KEY:
 			rogue.displayAggroRangeMode = !rogue.displayAggroRangeMode;
 			displayLevel();
@@ -3652,8 +3676,9 @@ void printHelpScreen() {
 		"             O  ****open saved game",
 		"             V  ****view saved recording",
 		"             Q  ****quit to title screen",
-        "",
+        //"",
 		"             \\  ****disable/enable color effects",
+        "             |  ****enable/disable realtime liquid animation",
 		"             ]  ****display/hide stealth range",
 		"   <space/esc>  ****clear message or cancel command",
 		"",
