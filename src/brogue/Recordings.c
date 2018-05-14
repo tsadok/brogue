@@ -942,6 +942,18 @@ void executePlaybackInput(rogueEvent *recordingInput) {
                                      &teal, false);
                 }
                 break;
+            case ANIMATE_LIQUIDS_KEY:
+                rogue.animateLiquids = !rogue.animateLiquids;
+                displayLevel();
+                refreshSideBar(-1, -1, false);
+                if (!rogue.trueColorMode) {
+                    messageWithColor(KEYBOARD_LABELS ? "Realtime liquid animations disabled. Press '|' again to enable." : "Realtime liquid animations disabled.",
+                                     &teal, false);
+                } else {
+                    messageWithColor(KEYBOARD_LABELS ? "Realtime liquid animations enabled. Press '|' again to disable." : "Realtime liquid animations enabled.",
+                                     &teal, false);
+                }
+                break;
             case AGGRO_DISPLAY_KEY:
                 rogue.displayAggroRangeMode = !rogue.displayAggroRangeMode;
                 displayLevel();
