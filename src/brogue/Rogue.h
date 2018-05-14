@@ -1124,6 +1124,7 @@ enum tileFlags {
 #define THROW_KEY			't'
 #define RELABEL_KEY         'R'
 #define TRUE_COLORS_KEY		'\\'
+#define ANIMATE_LIQUIDS_KEY '|'
 #define AGGRO_DISPLAY_KEY   ']'
 #define DROP_KEY			'd'
 #define CALL_KEY			'c'
@@ -2228,6 +2229,7 @@ typedef struct playerCharacter {
 	boolean alreadyFell;				// so the player can fall only one depth per turn
 	boolean eligibleToUseStairs;		// so the player uses stairs only when he steps onto them
 	boolean trueColorMode;				// whether lighting effects are disabled
+    boolean animateLiquids;             // whether to animate water and lava in realtime
     boolean displayAggroRangeMode;      // whether your stealth range is displayed
 	boolean quit;						// to skip the typical end-game theatrics when the player quits
         boolean didGuarantee;                   // role-specific guaranteed item has been generated
