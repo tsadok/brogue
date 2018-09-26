@@ -373,8 +373,6 @@ void initializeRogue(unsigned long seed) {
 	player.carriedItem = NULL;
 	player.status[STATUS_NUTRITION] = player.maxStatus[STATUS_NUTRITION] = STOMACH_SIZE;
 	player.currentHP = player.info.maxHP;
-	rogue.previousHealthPercent = 100;
-    rogue.previousPoisonPercent = 0;
 	player.creatureState = MONSTER_ALLY;
 	player.ticksUntilTurn = 0;
     player.mutationIndex = -1;
@@ -384,14 +382,16 @@ void initializeRogue(unsigned long seed) {
 	rogue.scentTurnNumber = 1000;
 	rogue.playerTurnNumber = 0;
     rogue.absoluteTurnNumber = 0;
+    rogue.previousPoisonPercent = 0;
 	rogue.foodSpawned = 0;
     rogue.lifePotionsSpawned = 0;
 	rogue.gold = 0;
 	rogue.goldGenerated = 0;
 	rogue.disturbed = false;
 	rogue.autoPlayingLevel = false;
-	rogue.automationActive = false;
-	rogue.justRested = false;
+    rogue.automationActive = false;
+    rogue.justRested = false;
+    rogue.justSearched = false;
 	rogue.easyMode = false;
 	rogue.inWater = false;
 	rogue.creaturesWillFlashThisTurn = false;
@@ -470,21 +470,21 @@ void initializeRogue(unsigned long seed) {
 		theItem->flags &= ~(ITEM_CURSED | ITEM_RUNIC_HINTED);
 		theItem->flags |= (ITEM_PROTECTED | ITEM_RUNIC);
 		identify(theItem);
-		theItem = addItemToPack(theItem);
+        theItem = addItemToPack(theItem);
 		
 		theItem = generateItem(STAFF, STAFF_FIRE);
 		theItem->enchant1 = 10;
 		theItem->charges = 300;
 		theItem->flags &= ~ITEM_CURSED;
 		identify(theItem);
-		theItem = addItemToPack(theItem);
-		
-		theItem = generateItem(STAFF, STAFF_LIGHTNING);
-		theItem->enchant1 = 10;
-		theItem->charges = 300;
-		theItem->flags &= ~ITEM_CURSED;
-		identify(theItem);
-		theItem = addItemToPack(theItem);
+        theItem = addItemToPack(theItem);
+        
+        theItem = generateItem(STAFF, STAFF_LIGHTNING);
+        theItem->enchant1 = 10;
+        theItem->charges = 300;
+        theItem->flags &= ~ITEM_CURSED;
+        identify(theItem);
+        theItem = addItemToPack(theItem);
 		
 		theItem = generateItem(STAFF, STAFF_BLINKING);
 		theItem->enchant1 = theItem->charges = 10;
@@ -530,7 +530,7 @@ void initializeRogue(unsigned long seed) {
 		theItem->enchant1 = 10;
 		theItem->charges = 300;
 		identify(theItem);
-		theItem = addItemToPack(theItem);
+        theItem = addItemToPack(theItem);
 		
 		theItem = generateItem(STAFF, STAFF_POISON);
 		theItem->enchant1 = 10;
@@ -560,13 +560,13 @@ void initializeRogue(unsigned long seed) {
 		theItem->charges = 300;
 		theItem->flags &= ~ITEM_CURSED;
 		identify(theItem);
-		theItem = addItemToPack(theItem);
-		
-		theItem = generateItem(RING, RING_AWARENESS);
-		theItem->enchant1 = 30;
-		theItem->flags &= ~ITEM_CURSED;
-		identify(theItem);
-		theItem = addItemToPack(theItem);
+        theItem = addItemToPack(theItem);
+        
+        theItem = generateItem(RING, RING_AWARENESS);
+        theItem->enchant1 = 30;
+        theItem->flags &= ~ITEM_CURSED;
+        identify(theItem);
+        theItem = addItemToPack(theItem);
         
 //		short i;
 //		for (i=0; i < NUMBER_CHARM_KINDS && i < 4; i++) {
@@ -712,8 +712,11 @@ void startLevel(short oldLevelNumber, short stairDirection) {
 	levels[oldLevelNumber - 1].awaySince = rogue.absoluteTurnNumber;
 	
 	//	Prepare the new level
-	
-	rogue.minersLightRadius = 2.25 + (DCOLS - 1) * (float) pow(0.85, rogue.depthLevel);
+    rogue.minersLightRadius = DCOLS - 1 << FP_BASE;
+    for (i = 0; i < rogue.depthLevel; i++) {
+        rogue.minersLightRadius = rogue.minersLightRadius * 85 / 100;
+    }
+    rogue.minersLightRadius += (225 << FP_BASE)/100;
 	updateColors();
 	updateRingBonuses(); // also updates miner's light
 	
@@ -854,7 +857,7 @@ void startLevel(short oldLevelNumber, short stairDirection) {
 		
 		getQualifyingLocNear(loc, player.xLoc, player.yLoc, true, 0,
 							 (T_PATHING_BLOCKER),
-							 (HAS_MONSTER | HAS_ITEM | HAS_UP_STAIRS | HAS_DOWN_STAIRS | IS_IN_MACHINE), false, false);
+							 (HAS_MONSTER | HAS_ITEM | HAS_STAIRS | IS_IN_MACHINE), false, false);
 	} else {
 		if (stairDirection == 1) { // heading downward
 			player.xLoc = rogue.upLoc[0];
@@ -869,7 +872,7 @@ void startLevel(short oldLevelNumber, short stairDirection) {
             loc[0] = player.xLoc + nbDirs[dir][0];
             loc[1] = player.yLoc + nbDirs[dir][1];
             if (!cellHasTerrainFlag(loc[0], loc[1], T_PATHING_BLOCKER)
-                && !(pmap[loc[0]][loc[1]].flags & (HAS_MONSTER | HAS_ITEM | HAS_UP_STAIRS | HAS_DOWN_STAIRS | IS_IN_MACHINE))) {
+                && !(pmap[loc[0]][loc[1]].flags & (HAS_MONSTER | HAS_ITEM | HAS_STAIRS | IS_IN_MACHINE))) {
                 placedPlayer = true;
             }
         }
@@ -878,7 +881,7 @@ void startLevel(short oldLevelNumber, short stairDirection) {
                                      player.xLoc, player.yLoc,
                                      true,
                                      T_DIVIDES_LEVEL, NULL,
-                                     T_PATHING_BLOCKER, (HAS_MONSTER | HAS_ITEM | HAS_UP_STAIRS | HAS_DOWN_STAIRS | IS_IN_MACHINE),
+                                     T_PATHING_BLOCKER, (HAS_MONSTER | HAS_ITEM | HAS_STAIRS | IS_IN_MACHINE),
                                      false);
         }
 	}
@@ -1125,7 +1128,7 @@ void gameOver(char *killedBy, boolean useCustomPhrasing) {
 		blackOutScreen();
 	} else {
 		copyDisplayBuffer(dbuf, displayBuffer);
-		funkyFade(dbuf, &black, 0, 30, mapToWindowX(player.xLoc), mapToWindowY(player.yLoc), false);
+		funkyFade(dbuf, &black, 0, 120, mapToWindowX(player.xLoc), mapToWindowY(player.yLoc), false);
 	}
 	
 	if (useCustomPhrasing) {
@@ -1195,7 +1198,7 @@ void victory(boolean superVictory) {
     if (superVictory) {
         message(    "Light streams through the portal, and you are teleported out of the dungeon.", false);
         copyDisplayBuffer(dbuf, displayBuffer);
-        funkyFade(dbuf, &superVictoryColor, 0, 120, mapToWindowX(player.xLoc), mapToWindowY(player.yLoc), false);
+        funkyFade(dbuf, &superVictoryColor, 0, 240, mapToWindowX(player.xLoc), mapToWindowY(player.yLoc), false);
         displayMoreSign();
         printString("Congratulations; you have transcended the Dungeons of Doom!                 ", mapToWindowX(0), mapToWindowY(-1), &black, &white, 0);
         displayMoreSign();
@@ -1205,7 +1208,7 @@ void victory(boolean superVictory) {
     } else {
         message(    "You are bathed in sunlight as you throw open the heavy doors.", false);
         copyDisplayBuffer(dbuf, displayBuffer);
-        funkyFade(dbuf, &white, 0, 100, mapToWindowX(player.xLoc), mapToWindowY(player.yLoc), false);
+        funkyFade(dbuf, &white, 0, 240, mapToWindowX(player.xLoc), mapToWindowY(player.yLoc), false);
         displayMoreSign();
         printString("Congratulations; you have escaped from the Dungeons of Doom!     ", mapToWindowX(0), mapToWindowY(-1), &black, &white, 0);
         displayMoreSign();
@@ -1231,7 +1234,7 @@ void victory(boolean superVictory) {
             printString(buf, mapToWindowX(60), min(ROWS-1, i + 1), &itemMessageColor, &black, dbuf);
             totalValue += max(0, itemValue(theItem) * 2);
             i++;
-        } else if (theItem->category & COUNTS_TOWARD_SCORE) {
+        } else if (itemValue(theItem) > 0) {
             identify(theItem);
             itemName(theItem, buf, true, true, &white);
             upperCase(buf);
@@ -1256,7 +1259,7 @@ void victory(boolean superVictory) {
         }
     }
 	
-	funkyFade(dbuf, &white, 0, 15, COLS/2, ROWS/2, true);
+	funkyFade(dbuf, &white, 0, 120, COLS/2, ROWS/2, true);
 	
     strcpy(victoryVerb, superVictory ? "Mastered" : "Escaped");
 	if (gemCount == 0) {

@@ -35,6 +35,8 @@ BROGUEFILES=src/brogue/Architect.o \
 	src/brogue/MainMenu.o \
 	src/brogue/Grid.o \
 	src/brogue/Time.o \
+	src/brogue/PowerTables.o \
+	src/brogue/Sqrt.o \
 	src/platform/main.o \
 	src/platform/platformdependent.o \
 	src/platform/curses-platform.o \
