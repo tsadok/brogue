@@ -101,10 +101,11 @@ unsigned long pickItemCategory(unsigned long theCategory) {
             probabilities = mage_probabilities;
             break;
 
-        case ROLE_SPY:
+        case ROLE_SCOUT:
             probabilities = spy_probabilities;
             break;
 
+        case ROLE_LUNATIC:
         case ROLE_ROGUE:
         case ROLE_ADVENTURER:
         default:
@@ -144,6 +145,15 @@ item *makeItemInto(item *theItem, unsigned long itemCategory, short itemKind) {
 	}
 	
 	itemCategory = pickItemCategory(itemCategory);
+    // Lunatics get scrolls of enchanting in lieu of potions of life:
+    if (((rogue.seed % NUMBER_OF_ROLES) == ROLE_LUNATIC) &&
+        (itemCategory == POTION) && (itemKind == POTION_LIFE)) {
+        itemCategory = SCROLL;
+        itemKind     = SCROLL_ENCHANTING;
+        // But keep the tallies as though we'd generated the life potion:
+        rogue.lifePotionsSpawned++;
+        rogue.enchantScrollFrequency += 50;
+    }
 	
 	theItem->category = itemCategory;
 	
@@ -398,8 +408,9 @@ item *makeItemInto(item *theItem, unsigned long itemCategory, short itemKind) {
                 GuarItem = RING_STEALTH;
                 break;
 
+            case ROLE_LUNATIC:
             case ROLE_ADVENTURER:
-            case ROLE_SPY:
+            case ROLE_SCOUT:
             default:
                 GuarCat  = POTION;
                 GuarItem = POTION_DETECT_MAGIC;
@@ -552,6 +563,8 @@ void adjustItemFrequenciesForRole(void) {
     int i;
     switch (rogue.seed % NUMBER_OF_ROLES) {
     default:
+    case ROLE_LUNATIC:
+        // Nothing here for now.
     case ROLE_ADVENTURER:
         // This is the default vanilla role, so everything is already as it should be.
         break;
@@ -594,7 +607,7 @@ void adjustItemFrequenciesForRole(void) {
         potionTable[POTION_INVISIBILITY].frequency = 2 * potionTable[POTION_LEVITATION].frequency;
         ringTable[RING_STEALTH].frequency = 2 * ringTable[RING_AWARENESS].frequency;
         break;
-    case ROLE_SPY:
+    case ROLE_SCOUT:
         /* This role is all about knowing what threats there are and evading them. */
         for (i = 0; i < NUMBER_ARMOR_KINDS; i++) {
             if (i != LEATHER_ARMOR)
@@ -803,8 +816,9 @@ void populateItems(short upstairsX, short upstairsY) {
             GuarCat  = RING;
             GuarItem = RING_STEALTH;
 
+        case ROLE_LUNATIC:
         case ROLE_ADVENTURER:
-        case ROLE_SPY:
+        case ROLE_SCOUT:
         default:
             GuarCat  = POTION;
             GuarItem = POTION_DETECT_MAGIC;

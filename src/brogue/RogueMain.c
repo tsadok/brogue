@@ -132,6 +132,7 @@ const char * roleName(int idx) {
         "adventurer",
         "barbarian",
         "healer",
+        "lunatic",
         "mage",
         "rogue",
         "scout"

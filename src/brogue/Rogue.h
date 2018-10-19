@@ -920,9 +920,10 @@ enum playerRole {
     ROLE_ADVENTURER,
     ROLE_BARBARIAN,
     ROLE_HEALER,
+    ROLE_LUNATIC,
     ROLE_MAGE,
     ROLE_ROGUE,
-    ROLE_SPY,
+    ROLE_SCOUT,
     NUMBER_OF_ROLES
 };
 
