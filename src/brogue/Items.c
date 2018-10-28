@@ -2462,8 +2462,8 @@ void itemDetails(char *buf, item *theItem) {
                             break;
                         case RING_WISDOM:
                             sprintf(buf2, "\n\nWhen worn, your staffs will recharge at %i%% of their normal rate. (If the ring is enchanted, the rate will increase to %i%% of the normal rate.)",
-                                    (int) (100 * fp_ringWisdomMultiplier(enchant) >> FP_BASE),
-                                    (int) (100 * fp_ringWisdomMultiplier(enchant + FP_FACTOR) >> FP_BASE));
+                                    (int) (10 * fp_ringWisdomMultiplier(enchant)),
+                                    (int) (10 * fp_ringWisdomMultiplier(enchant + FP_FACTOR)));
                             strcat(buf, buf2);
                             break;
                         case RING_REAPING:
