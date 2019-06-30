@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <termios.h>
+#include <unistd.h>
 #include "term.h"
 #include <stdint.h>
 #include <signal.h>
@@ -147,11 +149,12 @@ static void curses_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInpu
 			return;
 		}*/
 		
+                /*
 		if (colorsDance) {
 			shuffleTerrainColors(3, true);
 			commitDraws();
 		}	
-		
+                */
 		
 		key = Term.getkey();
 		if (key == TERM_MOUSE) {
@@ -200,6 +203,7 @@ static void curses_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInpu
 		
 		if (waitTime > 0 && waitTime <= PAUSE_BETWEEN_EVENT_POLLING) {
 			curses_pauseForMilliseconds(waitTime);
+                        tcflush(STDIN_FILENO, TCIFLUSH);
 		}
 	}
 }
