@@ -2,15 +2,28 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <termios.h>
+#include <unistd.h>
 #include "term.h"
-#include <sys/timeb.h>
 #include <stdint.h>
 #include <signal.h>
 #include "platform.h"
 
 extern playerCharacter rogue;
 
+static uint32_t lastTime;
+static uint32_t getTime(void)
+{
+	struct timespec now;
+	uint32_t delta;
+	clock_gettime(CLOCK_MONOTONIC, &now);
+	delta = now.tv_sec * 1000 + now.tv_nsec / 1000000 - lastTime;
+	lastTime = delta;
+	return delta;
+}
+
 static void gameLoop() {
+	getTime();
 	signal(SIGINT, SIG_DFL); // keep SDL from overriding the default ^C handler when it's linked
 
 	if (!Term.start()) {
@@ -108,12 +121,6 @@ static int rewriteKey(int key, boolean text) {
 
 #define PAUSE_BETWEEN_EVENT_POLLING		34//17
 
-static uint32_t getTime() {
-	struct timeb time;
-	ftime(&time);
-	return 1000 * time.time + time.millitm;
-}
-
 static boolean curses_pauseForMilliseconds(short milliseconds) {
 	Term.refresh();
 	Term.wait(milliseconds);
@@ -142,11 +149,12 @@ static void curses_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInpu
 			return;
 		}*/
 		
+                /*
 		if (colorsDance) {
 			shuffleTerrainColors(3, true);
 			commitDraws();
 		}	
-		
+                */
 		
 		key = Term.getkey();
 		if (key == TERM_MOUSE) {
@@ -195,6 +203,7 @@ static void curses_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInpu
 		
 		if (waitTime > 0 && waitTime <= PAUSE_BETWEEN_EVENT_POLLING) {
 			curses_pauseForMilliseconds(waitTime);
+                        tcflush(STDIN_FILENO, TCIFLUSH);
 		}
 	}
 }
